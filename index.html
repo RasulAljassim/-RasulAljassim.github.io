@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>تحليل الذهب الرقمي</title>
+  <style>
+    body {
+      direction: rtl;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      padding: 20px;
+    }
+    h2 {
+      color: #222;
+    }
+    label, select, input, button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .result {
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-top: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      border: 1px solid #aaa;
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #eee;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>📊 أداة التحليل الرقمي للذهب</h2>
+
+  <label>السعر الحالي:
+    <input type="number" id="price" placeholder="أدخل السعر الحالي، مثال: 3432.5" step="0.1">
+  </label>
+
+  <label>اختر الفريم الزمني:
+    <select id="tf">
+      <option value="1m">1 دقيقة</option>
+      <option value="5m">5 دقائق</option>
+      <option value="15m">15 دقيقة</option>
+      <option value="30m">30 دقيقة</option>
+      <option value="1h">ساعة</option>
+      <option value="4h">4 ساعات</option>
+      <option value="1d">يومي</option>
+    </select>
+  </label>
+
+  <button onclick="analyze()">🔍 تحليل</button>
+  <button onclick="copyToClipboard()">📋 نسخ التوصية</button>
+  <button onclick="shareOnWhatsApp()">📤 إرسال على واتساب</button>
+
+  <div class="result" id="output">👇 النتائج ستظهر هنا بعد التحليل</div>
+
+  <script>
+    let lastMessage = '';
+
+    function analyze() {
+      const priceInput = document.getElementById('price').value;
+      const P = parseFloat(priceInput);
+      const tfSelect = document.getElementById('tf');
+      const tfText = tfSelect.options[tfSelect.selectedIndex].text;
+
+      if (isNaN(P)) {
+        document.getElementById('output').innerHTML = '⚠️ يرجى إدخال سعر صالح.';
+        return;
+      }
+
+      const base = 3185;
+      const step = 45;
+      const diff = P - base;
+      const ratio = diff / step;
+      const angle = ratio * step;
+
+      const nextStep = Math.ceil(ratio);
+      const prevStep = Math.floor(ratio);
+
+      const resistance = base + nextStep * step;
+      const support = base + prevStep * step;
+
+      let signal = (ratio % 2 < 1) ? 'UP' : 'DOWN';
+
+      let recommendation = '';
+      if (signal === 'UP') {
+        if (angle >= 315) {
+          recommendation = '📌 السعر في تشبع صعودي – انتبه للمخاطر.';
+        } else if (P >= resistance - 1) {
+          recommendation = '✅ ممكن دخول شراء بعد تأكيد اختراق المقاومة.';
+        } else {
+          recommendation = '📈 فرصة شراء ممكنة فوق الدعم مع إدارة مخاطر.';
+        }
+      } else {
+        if (P <= support + 1) {
+          recommendation = '🔻 دخول بيع ممكن بكسر الدعم.';
+        } else if (angle >= 225 && angle <= 270) {
+          recommendation = '⚠️ ممكن ارتداد – لا تدخل بدون تأكيد.';
+        } else {
+          recommendation = '❌ الاتجاه هابط ولا توجد فرصة مؤكدة حالياً.';
+        }
+      }
+
+      let table = '<table><tr><th>الزاوية</th><th>السعر المقابل</th></tr>';
+      for (let i = 0; i <= 360; i += step) {
+        const level = base + (i / step) * step;
+        table += `<tr><td>${i}°</td><td>${level.toFixed(2)}</td></tr>`;
+      }
+      table += '</table>';
+
+      // تحضير النص القابل للنسخ
+      lastMessage = `🔍 تحليل الذهب (${tfText})\n` +
+        `السعر الحالي: ${P.toFixed(2)}\n` +
+        `الإشارة الرقمية: ${signal}\n` +
+        `الزاوية: ${angle.toFixed(1)}°\n` +
+        `مقاومة قريبة: ${resistance.toFixed(2)}\n` +
+        `دعم قريب: ${support.toFixed(2)}\n` +
+        `📌 التوصية: ${recommendation}`;
+
+      // عرض النتيجة
+      document.getElementById('output').innerHTML = `
+        <strong>الفريم:</strong> ${tfText}<br>
+        <strong>السعر الحالي:</strong> ${P.toFixed(2)}<br>
+        <strong>الإشارة الرقمية:</strong> ${signal}<br>
+        <strong>الزاوية الحالية:</strong> ${angle.toFixed(1)}°<br>
+        <strong>أقرب مقاومة:</strong> ${resistance.toFixed(2)}<br>
+        <strong>أقرب دعم:</strong> ${support.toFixed(2)}<br><br>
+        <strong>🧠 التوصية:</strong> ${recommendation}
+        <br><br>
+        ${table}
+      `;
+    }
+
+    function copyToClipboard() {
+      if (lastMessage) {
+        navigator.clipboard.writeText(lastMessage).then(() => {
+          alert('✅ تم نسخ التوصية بنجاح!');
+        });
+      } else {
+        alert('⚠️ قم أولاً بالتحليل للحصول على التوصية.');
+      }
+    }
+
+    function shareOnWhatsApp() {
+      if (lastMessage) {
+        const encoded = encodeURIComponent(lastMessage);
+        const url = `https://wa.me/?text=${encoded}`;
+        window.open(url, '_blank');
+      } else {
+        alert('⚠️ قم بالتحليل أولاً لمشاركة التوصية.');
+      }
+    }
+  </script>
+
+</body>
+</html>
